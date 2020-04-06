@@ -1,4 +1,6 @@
 from aiohttp import web
+import signal
+import asyncio
 import logging
 import traceback
 import yaml
@@ -28,7 +30,8 @@ class MyTranslationEngine(web.Application):
         web.run_app(
             server,
             host=config["translationEngineServer"]["host"],
-            port=config["translationEngineServer"]["port"]
+            port=config["translationEngineServer"]["port"],
+            handle_signals=False
         )
         return server
 
@@ -39,6 +42,16 @@ class MyTranslationEngine(web.Application):
             translations = []
 
             for text in texts:
+                command = text.split()
+
+                if len(command) == 2 and "wait" == command[0]:
+                    await asyncio.sleep(int(command[1]))
+                elif len(command) == 1 and "error" == command[0]:
+                    raise Exception("Error keyword given.")
+                elif len(command) == 1 and "shutdown" == command[0]:
+                    pid = os.getpid()
+                    os.kill(pid, signal.SIGINT)
+
                 translations.append({
                     "my_text": text,
                     "my_translation": text.upper()
@@ -48,7 +61,7 @@ class MyTranslationEngine(web.Application):
                     "my_translations": translations
             })
 
-        except Exception as e:
+        except Exception:
             tb = traceback.format_exc()
             tb_str = str(tb)
             logging.error('Error: %s', tb_str)

@@ -19,7 +19,7 @@ class MyTranslationEngine(web.Application):
         os.chdir(
             os.path.dirname(os.path.abspath(sys.modules['__main__'].__file__))
         )
-        with open('nteu_adapter_config.yml') as f:
+        with open('config.yml') as f:
             config = yaml.load(f, Loader=yaml.FullLoader)
 
         # Create server

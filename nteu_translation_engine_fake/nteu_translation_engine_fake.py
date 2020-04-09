@@ -3,34 +3,25 @@ import signal
 import asyncio
 import logging
 import traceback
-import yaml
-import sys
 import os
 
 
 class MyTranslationEngine(web.Application):
-    def __init__(self, config):
-        self._config = config
+    def __init__(self):
         super().__init__()
 
     @staticmethod
     def run():
-        # Load config
-        os.chdir(
-            os.path.dirname(os.path.abspath(sys.modules['__main__'].__file__))
-        )
-        with open('config.yml') as f:
-            config = yaml.load(f, Loader=yaml.FullLoader)
 
         # Create server
-        server = MyTranslationEngine(config)
+        server = MyTranslationEngine()
         server.router.add_post(
             "/mytranslation", server.my_translation_handler
         )
         web.run_app(
             server,
-            host=config["translationEngineServer"]["host"],
-            port=config["translationEngineServer"]["port"],
+            host="0.0.0.0",
+            port=5019,
             handle_signals=False
         )
         return server
@@ -66,6 +57,3 @@ class MyTranslationEngine(web.Application):
             tb_str = str(tb)
             logging.error('Error: %s', tb_str)
             return web.Response(text=tb_str, status=500)
-
-    def get_config(self):
-        return self._config
